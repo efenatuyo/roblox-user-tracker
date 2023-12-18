@@ -1,5 +1,5 @@
 from ..requestHandler       import aioSession
-from ..database             import r, a
+from ..database             import r, w
 from ..discord.send_message import post
 from ..misc                 import u
 import asyncio
@@ -29,7 +29,8 @@ async def tracker_tasks(self, session, user_ids, proxy):
             
             data = r()
             if str(resp.user_id) not in data["users_track"]:
-                data = u(resp)
+                data["users_track"].update({str(resp.user_id): {}})
+                data["users_track"][str(resp.user_id)] = {"online_status": resp.online_status, "channel_message": []}
                 
             if resp.online_status != data["users_track"][str(resp.user_id)]["online_status"]:
                 embed_data = {"embeds": [{
@@ -47,7 +48,8 @@ async def tracker_tasks(self, session, user_ids, proxy):
                 for channel_ids in data["users_track"][str(resp.user_id)]["channel_message"]:
                     tasks.append(post(session, f"https://discord.com/api/v9/channels/{channel_ids}/messages", embed_data, self.token))
                 await asyncio.gather(*tasks)
-                data = u(resp, data)
+                data["users_track"][str(resp.user_id)] = {"online_status": resp.online_status, "channel_message": data["users_track"][str(resp.user_id)]["channel_message"]}
+                w(data)
 
 def split(input_list: list, max_len: int = 200):
     if len(input_list) <= max_len:

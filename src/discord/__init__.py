@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from ..database import r, a
+from ..database import r, w, a
 from ..requestHandler import user_request
 from ..misc import u
 
@@ -37,9 +37,10 @@ async def add_monitor(ctx, user_id="", channel_id=""):
         if int(channel_id) in data["users_track"][str(user_id)]["channel_message"]:
             return await ctx.reply("This channel already monitors this id")
         data["users_track"][str(user_id)]["channel_message"].append(int(channel_id))
-        a({"users_track": {str(user_id): {"online_status": data["users_track"][str(user_id)]["online_status"], "channel_message": data["users_track"][str(user_id)]["channel_message"]}}})
+        data["users_track"][str(user_id)] = {"online_status": data["users_track"][str(user_id)]["online_status"], "channel_message": data["users_track"][str(user_id)]["channel_message"]}
+        w(data)
     else:
-        u(user_request(user_id=int(user_id), online_status=0), id=int(channel_id))
+        u(user_request(user_id=int(user_id), online_status=0), data, id=int(channel_id))
     
     return await ctx.reply(f"Started monitoring user id: **{user_id}** in channel id: **{channel_id}**")
 
