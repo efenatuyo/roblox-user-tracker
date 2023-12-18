@@ -8,11 +8,14 @@ async def tracker_ss(self):
     session = aioSession(self.cookie)
     list_ids = split(self.user_ids)
     while True:
-        current_proxy = -1
+        current_proxy = 0
         tasks = []
         for user_ids in list_ids:
             tasks.append(tracker_tasks(self, session, user_ids, self.proxies[current_proxy]))
-            current_proxy += -1
+            if not len(current_proxy) > current_proxy:
+                current_proxy = 0
+            else:
+                current_proxy += 1
         await asyncio.gather(*tasks)
 
         list_ids = split(self.user_ids)
